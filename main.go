@@ -30,7 +30,7 @@ type Item struct {
 	Price                Price                    `json:"price"`
 	IsVisible            bool                     `json:"is_visible"`
 	Discount             interface{}              `json:"discount"`
-	BrandTitle           BrandTitle               `json:"brand_title"`
+	BrandTitle           string                   `json:"brand_title"`
 	Path                 string                   `json:"path"`
 	User                 User                     `json:"user"`
 	Conversion           *Conversion              `json:"conversion"`
@@ -47,7 +47,6 @@ type Item struct {
 	ContentSource        ContentSource            `json:"content_source"`
 	Status               Status                   `json:"status"`
 	IconBadges           []interface{}            `json:"icon_badges"`
-	ItemBox              ItemBox                  `json:"item_box"`
 	SearchTrackingParams ItemSearchTrackingParams `json:"search_tracking_params"`
 }
 
@@ -58,11 +57,6 @@ type Conversion struct {
 	FxRoundedRate  string         `json:"fx_rounded_rate"`
 	FxBaseAmount   string         `json:"fx_base_amount"`
 	FxMarkupRate   string         `json:"fx_markup_rate"`
-}
-
-type ItemBox struct {
-	FirstLine  BrandTitle `json:"first_line"`
-	SecondLine string     `json:"second_line"`
 }
 
 type ItemPhoto struct {
@@ -148,15 +142,6 @@ type ItemsSearchTrackingParams struct {
 	GlobalSearchSessionID string `json:"global_search_session_id"`
 }
 
-type BrandTitle string
-
-const (
-	PoloByRalphLauren    BrandTitle = "Polo by ralph lauren"
-	PoloRalphLauren      BrandTitle = "Polo Ralph Lauren"
-	PoloSportRalphLauren BrandTitle = "Polo Sport Ralph Lauren"
-	RalphLauren          BrandTitle = "Ralph Lauren"
-)
-
 type ContentSource string
 
 const (
@@ -221,8 +206,15 @@ type Product struct {
 		Amount       string `json:"amount"`
 		CurrencyCode string `json:"currency_code"`
 	} `json:"price"`
-	URL      string    `json:"url"`
-	ImageURL ItemPhoto `json:"photo"`
+	URL            string    `json:"url"`
+	ImageURL       ItemPhoto `json:"photo"`
+	BrandTitle     string    `json:"brand_title"`
+	SizeTitle      string    `json:"size_title"`
+	Status         string    `json:"status"`
+	TotalItemPrice struct {
+		Amount       string `json:"amount"`
+		CurrencyCode string `json:"currency_code"`
+	} `json:"total_item_price"`
 }
 
 type Response struct {
@@ -357,9 +349,9 @@ func sendDiscordNotification(webhook string, product Product) {
 			color = int(dominantColor)
 		}
 	}
-
-	payload := fmt.Sprintf(`{"content": null,"embeds": [{"title": "%s","url": "%s","color": %d,"fields": [{"name": "Price","value": "%s %s","inline": true}],"image": {"url": "%s"}}]}`,
-		product.Title, product.URL, color, product.Price.Amount, product.Price.CurrencyCode, product.ImageURL.URL)
+	ticks := "```"
+	payload := fmt.Sprintf(`{"content": null,"embeds": [{"title": "%s","url": "%s","color": %d,"fields": [{"name": "Hinta","value": "%s%s EUR%s","inline": true},{"name": "Merkki","value": "%s%s%s","inline": true},{"name": "Koko","value": "%s%s%s","inline": true},{"name": "Kunto","value": "%s%s%s","inline": true}],"image": {"url": "%s"}}]}`,
+		product.Title, product.URL, color, ticks, product.TotalItemPrice.Amount, ticks, ticks, product.BrandTitle, ticks, ticks, product.SizeTitle, ticks, ticks, product.Status, ticks, product.ImageURL.URL)
 	sendWebhook(webhook, payload)
 }
 
